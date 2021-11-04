@@ -1,0 +1,42 @@
+---
+title: "chip_seq_script"
+author: "Ahmed Al-Tohamy"
+date: "11/4/2021"
+output: html_document
+---
+
+
+```{bash}
+#create directories to store the data
+mkdir -p data
+mkdir -p refs
+mkdir bam
+```
+
+```{bash}
+#get some information regarding the run
+esearch -db sra -query PRJNA260792  | efetch -format runinfo > runinfo.csv
+cat runinfo.csv | cut -d , -f 1,2,3 | head
+```
+
+```{bash}
+#extract the run ids 
+cat runinfo.csv | cut -f 1 -d , | grep SRR > runids.txt
+
+#download the fastaq files
+cat runids.txt | parallel --eta --verbose  "fastq-dump -O data --split-files -F {}"
+
+```
+
+```{bash}
+#get summary info regarding samples
+esearch -db sra -query PRJNA260792  | esummary > summary.xml
+
+#extract readable attribute from the summary.xml and put it into summary.csv
+cat summary.xml | xtract -pattern DocumentSummary -element Run@acc Title > summary.csv
+```
+
+
+
+
+
